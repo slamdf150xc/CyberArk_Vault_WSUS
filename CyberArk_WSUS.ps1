@@ -17,7 +17,7 @@
 	Randy Brown
 
 	VERSION HISTORY:
-	0.1 06/15/2021 - Initial release
+	See GitHub
 #>
 ##########################################################################################
 ######################### GLOBAL VARIABLE DECLARATIONS ###################################
@@ -81,17 +81,22 @@ function wuauReport {
 
 function configureWSUS {
     $wsusURL = getWSUSURL
-
-    if (!$wsusURL) {
-        do {
-            $wsusURL = Read-Host "Please enter the WSUS IP/URL and port. (http://10.1.20.12:8530)"
-            $result = $host.ui.PromptForChoice($wsusURL, $message, $options, 0)
-            switch ($result) {
-                '0' {}
-                '1' {}
-            }
-        } until ($result -eq '0')
-    }
+    $wsusPrompt = "Please enter the WSUS IP/URL and port. (http://10.1.20.12:8530)"
+    ""
+    do {
+        if ($wsusURL) {
+            Write-Host "Your current WSUS address is: $wsusURL" -ForegroundColor Yellow
+            ""
+            $wsusURL = Read-Host $wsusPrompt
+        } else {
+            $wsusURL = Read-Host $wsusPrompt
+        }
+        $result = $host.ui.PromptForChoice($wsusURL, $message, $options, 0)
+        switch ($result) {
+            '0' {}
+            '1' {}
+        }
+    } until ($result -eq '0')
 
     try {
         touchService $wuauservName "Automatic" "Running" "Enabling and Starting $wuauservName..." $false
@@ -596,6 +601,17 @@ function configureFirewall {
 
 Clear-Host
 
+if (!(getWSUSURL)) {
+    do {
+        Write-Host "It looks like you've not setup your WSUS URL. Would you like to do that now?"
+        $response = Read-Host "(Y/N)"
+        switch ($response.ToLower()) {
+            'y' { configureWSUS }
+            'n' {}
+        }
+    } until ($response.ToLower() -eq 'y' -or $response.ToLower() -eq 'n')
+}
+
 do {
     showMenu
     $selection = Read-Host "Please make a selection"
@@ -607,7 +623,7 @@ do {
         '4' { downloadUpdates $false }
         '5' { installUpdates $false }
         '6' { downloadUpdates $true }
-        '7' { shutdown.exe -r -t 00
+        '7' { shutdown.exe -r -t 01
             exit 0 }
         '8' { 
             startServices
