@@ -623,7 +623,7 @@ do {
         '4' { downloadUpdates $false }
         '5' { installUpdates $false }
         '6' { downloadUpdates $true }
-        '7' { shutdown.exe -r -t 00
+        '7' { shutdown.exe -r -t 01
             exit 0 }
         '8' { 
             startServices
