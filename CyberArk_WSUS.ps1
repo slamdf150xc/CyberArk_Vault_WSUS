@@ -17,8 +17,7 @@
 	Randy Brown
 
 	VERSION HISTORY:
-	0.1 06/15/2021 - Initial release
-    0.2 08/09/2021 - Update workflow in configureWSUS function
+	See GitHub
 #>
 ##########################################################################################
 ######################### GLOBAL VARIABLE DECLARATIONS ###################################
@@ -601,6 +600,17 @@ function configureFirewall {
 ########################## MAIN SCRIPT BLOCK #############################################
 
 Clear-Host
+
+if (!(getWSUSURL)) {
+    do {
+        Write-Host "It looks like you've not setup your WSUS URL. Would you like to do that now?"
+        $response = Read-Host "(Y/N)"
+        switch ($response.ToLower()) {
+            'y' { configureWSUS }
+            'n' {}
+        }
+    } until ($response.ToLower() -eq 'y' -or $response.ToLower() -eq 'n')
+}
 
 do {
     showMenu
