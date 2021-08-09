@@ -18,6 +18,7 @@
 
 	VERSION HISTORY:
 	0.1 06/15/2021 - Initial release
+    0.2 08/09/2021 - Update workflow in configureWSUS function
 #>
 ##########################################################################################
 ######################### GLOBAL VARIABLE DECLARATIONS ###################################
@@ -81,17 +82,22 @@ function wuauReport {
 
 function configureWSUS {
     $wsusURL = getWSUSURL
-
-    if (!$wsusURL) {
-        do {
-            $wsusURL = Read-Host "Please enter the WSUS IP/URL and port. (http://10.1.20.12:8530)"
-            $result = $host.ui.PromptForChoice($wsusURL, $message, $options, 0)
-            switch ($result) {
-                '0' {}
-                '1' {}
-            }
-        } until ($result -eq '0')
-    }
+    $wsusPrompt = "Please enter the WSUS IP/URL and port. (http://10.1.20.12:8530)"
+    ""
+    do {
+        if ($wsusURL) {
+            Write-Host "Your current WSUS address is: $wsusURL" -ForegroundColor Yellow
+            ""
+            $wsusURL = Read-Host $wsusPrompt
+        } else {
+            $wsusURL = Read-Host $wsusPrompt
+        }
+        $result = $host.ui.PromptForChoice($wsusURL, $message, $options, 0)
+        switch ($result) {
+            '0' {}
+            '1' {}
+        }
+    } until ($result -eq '0')
 
     try {
         touchService $wuauservName "Automatic" "Running" "Enabling and Starting $wuauservName..." $false
