@@ -48,6 +48,7 @@ If you choose "No" you will need to select Option 1 when the menu loads.
     ```
 * 2: Start WSUS services and open the firewall
     * This option will enable/start the nessary services for WSUS to function and open the local firewall to allow the Vault to comuticate with the configured WSUS server.
+    * You can now install updates via the Windows Update GUI.
 * 3: Stop WSUS servies and close the firewall
     * This option will stop/disable the WSUS services and remove the local firewall rule.
 * 4: Download updates from WSUS
