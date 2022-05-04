@@ -23,6 +23,7 @@
 ######################### GLOBAL VARIABLE DECLARATIONS ###################################
 
 $regPaths = @{}
+servicesManual = $false
 
 # Variables for the registery path
 $WsusRegistryPath = "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate"
@@ -314,7 +315,7 @@ function startServices {
 
     touchService $wuauservName "Automatic" "Running" "Enabling and Starting $wuauservName..." $false
     touchService $TrustedInstallerName "Manual" "Stopped" "Setting $TrustedInstallerName to Manual..." $false
-    touchService $UpdateOrchestratorName "Manual" "Stopped" "Setting $UpdateOrchestratorName to Manual..." $false
+    touchService $UpdateOrchestratorName "Manual" "Stopped" "Setting $UpdateOrchestratorName to Manual..." $false    
 }
 
 function downloadUpdates {
@@ -618,17 +619,20 @@ do {
     ""
     switch ($selection) {
         '1' { configureWSUS }
-        '2' { startServices }
-        '3' { stopServices }
+        '2' { startServices
+                servicesManual = $true }
+        '3' { stopServices
+                servicesManual = $false }
         '4' { downloadUpdates $false }
         '5' { installUpdates $false }
         '6' { downloadUpdates $true }
         '7' { shutdown.exe -r -t 01
             exit 0 }
-        '8' { 
-            startServices
-            wuauReport
-            stopServices
+        '8' { startServices
+                wuauReport
+                if (!servicesManual) {
+                    stopServices
+                }
         }
     }
     ""
