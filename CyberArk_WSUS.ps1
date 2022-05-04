@@ -18,13 +18,13 @@
 
 	VERSION HISTORY:
 	See GitHub
-    https://github.com/slamdf150xc/CyberArk_Vault_WSUS
+	https://github.com/slamdf150xc/CyberArk_Vault_WSUS
 #>
 ##########################################################################################
 ######################### GLOBAL VARIABLE DECLARATIONS ###################################
 
 $regPaths = @{}
-servicesManual = $false
+$servicesManual = $false
 
 # Variables for the registery path
 $WsusRegistryPath = "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate"
@@ -621,9 +621,9 @@ do {
     switch ($selection) {
         '1' { configureWSUS }
         '2' { startServices
-                servicesManual = $true }
+                $servicesManual = $true }
         '3' { stopServices
-                servicesManual = $false }
+                $servicesManual = $false }
         '4' { downloadUpdates $false }
         '5' { installUpdates $false }
         '6' { downloadUpdates $true }
@@ -631,7 +631,7 @@ do {
             exit 0 }
         '8' { startServices
                 wuauReport
-                if (!servicesManual) {
+                if (!($servicesManual)) {
                     stopServices
                 }
         }
