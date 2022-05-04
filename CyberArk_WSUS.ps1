@@ -25,6 +25,7 @@
 
 $regPaths = @{}
 $servicesManual = $false
+$NeedsReboot = $false
 
 # Variables for the registery path
 $WsusRegistryPath = "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate"
@@ -245,6 +246,10 @@ function showMenu {
     }
 
     ""
+    if ($NeedsReboot) {
+        WriteRed "Vault server reboot is needed to finish applying the updates"
+    }
+    
     Write-Host "1: Configure WSUS server URL:Port"
     Write-Host "2: Start WSUS services and open the firewall"
     Write-Host "3: Stop WSUS servies and close the firewall"
@@ -452,8 +457,7 @@ function installUpdates {
 
         $NumberOfUpdate = 0
         $NotInstalledCount = 0
-        $ErrorCount = 0
-        $NeedsReboot = $false
+        $ErrorCount = 0        
 
         Write-Host "Installing "$downloadCount" updates..."
         ""
@@ -484,7 +488,7 @@ function installUpdates {
                 }
                 
                 if (!$NeedsReboot) { 
-                    $NeedsReboot = $installResult.RebootRequired 
+                    $NeedsReboot = $InstallResult.RebootRequired 
                 }
                 
                 switch -exact ($InstallResult.ResultCode)
@@ -531,10 +535,6 @@ function installUpdates {
 
         if($ErrorCount -gt 0) {
             WriteRed ("" + $ErrorCount + " updates with errors")
-        }
-
-        if ($NeedsReboot) { 
-            WriteRed "Requires a restart"
         }
     }
 
@@ -627,8 +627,11 @@ do {
         '4' { downloadUpdates $false }
         '5' { installUpdates $false }
         '6' { downloadUpdates $true }
-        '7' { shutdown.exe -r -t 01
-            exit 0 }
+        '7' { stopServices
+                $servicesManual = $false
+                Write-Host "Sending reboot command" -ForegroundColor Yellow
+                shutdown.exe -r -t 01
+                exit 0 }
         '8' { startServices
                 wuauReport
                 if (!($servicesManual)) {
