@@ -219,17 +219,21 @@ function touchService {
         $svcStatus,
         $message,
         $force
-    )
-    Write-Host $message -NoNewline
+    )    
+    if ($servicesManual -eq $false) {
+        Write-Host $message -NoNewline
 
-    if ($force -eq $true -and $svcStartupType -eq "Disabled") {
-        Get-Service -Name $svcName | Stop-Service -Force | Out-Null
-        Set-Service -Name $svcName -StartupType Disabled | Out-Null
+        if ($force -eq $true -and $svcStartupType -eq "Disabled") {
+            Get-Service -Name $svcName | Stop-Service -Force | Out-Null
+            Set-Service -Name $svcName -StartupType Disabled | Out-Null
+        } else {
+            Set-Service -Name $svcName -StartupType $svcStartupType -Status $svcStatus | Out-Null
+        }
+
+        writeGreen "OK"
     } else {
-        Set-Service -Name $svcName -StartupType $svcStartupType -Status $svcStatus | Out-Null
+        Write-Host "Services have already been started."
     }
-
-    writeGreen "OK"
 }
 
 function showMenu {
