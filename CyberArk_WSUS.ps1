@@ -634,7 +634,7 @@ do {
                 exit 0 }
         '8' { startServices
                 wuauReport
-                if (!($servicesManual)) {
+                if ($servicesManual -eq $false) {
                     stopServices
                 }
         }
