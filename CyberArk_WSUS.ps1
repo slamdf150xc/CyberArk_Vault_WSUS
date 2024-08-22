@@ -656,6 +656,8 @@ if ($Silent -and !(getWSUSURL)) {
     exit 1
 } elseif ($Silent -and (getWSUSURL)) {
     downloadUpdates $true
+
+    exit 0
 } elseif (!$Silent) {
     main
 }
