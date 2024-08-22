@@ -1,4 +1,3 @@
-################################### GET-HELP #############################################
 <#
 .SYNOPSIS
  	All in one utility for WSUS updates on CyberArk Vault Server
@@ -20,7 +19,7 @@
 	See GitHub
 	https://github.com/slamdf150xc/CyberArk_Vault_WSUS
 #>
-##########################################################################################
+
 ######################### GLOBAL VARIABLE DECLARATIONS ###################################
 
 $regPaths = @{}
@@ -219,21 +218,17 @@ function touchService {
         $svcStatus,
         $message,
         $force
-    )    
-    if ($servicesManual -eq $false) {
-        Write-Host $message -NoNewline
+    )
+    Write-Host $message -NoNewline
 
-        if ($force -eq $true -and $svcStartupType -eq "Disabled") {
-            Get-Service -Name $svcName | Stop-Service -Force | Out-Null
-            Set-Service -Name $svcName -StartupType Disabled | Out-Null
-        } else {
-            Set-Service -Name $svcName -StartupType $svcStartupType -Status $svcStatus | Out-Null
-        }
-
-        writeGreen "OK"
+    if ($force -eq $true -and $svcStartupType -eq "Disabled") {
+        Get-Service -Name $svcName | Stop-Service -Force | Out-Null
+        Set-Service -Name $svcName -StartupType Disabled | Out-Null
     } else {
-        Write-Host "Services have already been started."
+        Set-Service -Name $svcName -StartupType $svcStartupType -Status $svcStatus | Out-Null
     }
+
+    writeGreen "OK"
 }
 
 function showMenu {
@@ -638,7 +633,7 @@ do {
                 exit 0 }
         '8' { startServices
                 wuauReport
-                if ($servicesManual -eq $false) {
+                if (!($servicesManual)) {
                     stopServices
                 }
         }
