@@ -1,13 +1,14 @@
-################################### GET-HELP #############################################
 <#
 .SYNOPSIS
  	All in one utility for WSUS updates on CyberArk Vault Server
  
 .EXAMPLE
  	.\CyberArk_WSUS.ps1
+    .\CyberArk_WSUS.ps1 -Silent
  
 .INPUTS  
-	None via command line
+	-Silent
+        This argument will instruct the script to automatically download and install patches
 	
 .OUTPUTS
 	None
@@ -20,8 +21,14 @@
 	See GitHub
 	https://github.com/slamdf150xc/CyberArk_Vault_WSUS
 #>
-##########################################################################################
-######################### GLOBAL VARIABLE DECLARATIONS ###################################
+
+####################################### Parameters #######################################
+
+param(
+    [switch]$Silent
+)
+
+############################## GLOBAL VARIABLE DECLARATIONS ##############################
 
 $regPaths = @{}
 $servicesManual = $false
@@ -63,7 +70,7 @@ $no = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'No'
 $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no)
 $message = "Is this the correct WSUS address?"
 
-########################## START FUNCTIONS ###############################################
+##################################### START FUNCTIONS ####################################
 
 function writeRed($text) {
 	Write-Host $text -ForegroundColor Red
@@ -597,49 +604,60 @@ function configureFirewall {
         writeRed $_
     }    
 }
-########################## END FUNCTIONS #################################################
 
-########################## MAIN SCRIPT BLOCK #############################################
+function main {
+    if (!(getWSUSURL)) {
+        do {
+            Write-Host "It looks like you've not setup your WSUS URL. Would you like to do that now?"
+            $response = Read-Host "(Y/N)"
+            switch ($response.ToLower()) {
+                'y' { configureWSUS }
+                'n' {}
+            }
+        } until ($response.ToLower() -eq 'y' -or $response.ToLower() -eq 'n')
+    }
+    
+    do {
+        showMenu
+        $selection = Read-Host "Please make a selection"
+        ""
+        switch ($selection) {
+            '1' { configureWSUS }
+            '2' { startServices
+                    $servicesManual = $true }
+            '3' { stopServices
+                    $servicesManual = $false }
+            '4' { downloadUpdates $false }
+            '5' { installUpdates $false }
+            '6' { downloadUpdates $true }
+            '7' { stopServices
+                    $servicesManual = $false
+                    Write-Host "Sending reboot command" -ForegroundColor Yellow
+                    shutdown.exe -r -t 01
+                    exit 0 }
+            '8' { startServices
+                    wuauReport
+                    if (!($servicesManual)) {
+                        stopServices
+                    }
+            }
+        }
+        ""
+    } until ($selection.ToLower() -eq 'q')
+}
+
+#################################### MAIN SCRIPT BLOCK ###################################
 
 Clear-Host
 
-if (!(getWSUSURL)) {
-    do {
-        Write-Host "It looks like you've not setup your WSUS URL. Would you like to do that now?"
-        $response = Read-Host "(Y/N)"
-        switch ($response.ToLower()) {
-            'y' { configureWSUS }
-            'n' {}
-        }
-    } until ($response.ToLower() -eq 'y' -or $response.ToLower() -eq 'n')
+if ($Silent -and !(getWSUSURL)) {
+    Write-Host "It looks like you've not setup your WSUS URL. Please manually execute this script and configure the WSUS URL before running in Silent Mode."
+    
+    exit 1
+} elseif ($Silent -and (getWSUSURL)) {
+    downloadUpdates $true
+} elseif (!$Silent) {
+    main
 }
 
-do {
-    showMenu
-    $selection = Read-Host "Please make a selection"
-    ""
-    switch ($selection) {
-        '1' { configureWSUS }
-        '2' { startServices
-                $servicesManual = $true }
-        '3' { stopServices
-                $servicesManual = $false }
-        '4' { downloadUpdates $false }
-        '5' { installUpdates $false }
-        '6' { downloadUpdates $true }
-        '7' { stopServices
-                $servicesManual = $false
-                Write-Host "Sending reboot command" -ForegroundColor Yellow
-                shutdown.exe -r -t 01
-                exit 0 }
-        '8' { startServices
-                wuauReport
-                if (!($servicesManual)) {
-                    stopServices
-                }
-        }
-    }
-    ""
-} until ($selection.ToLower() -eq 'q')
-
-########################### END SCRIPT ###################################################
+####################################### END SCRIPT #######################################
