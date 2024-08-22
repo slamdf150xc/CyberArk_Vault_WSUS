@@ -5,6 +5,7 @@ Script to configure CyberArk Vault to Download and Install updates from a WSUS s
 ### Execution
 ```
 .\CyberArk_WSUS.ps1
+.\CyberArk_WSUS.ps1 -Silent
 ```
 
 You will be prompted with a menu...
