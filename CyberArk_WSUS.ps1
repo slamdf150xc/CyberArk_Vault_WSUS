@@ -629,25 +629,26 @@ function main {
         ""
         switch ($selection) {
             '1' { configureWSUS }
-            '2' { startServices
-                    $servicesManual = $true
-                }
-            '3' { stopServices
-                    $servicesManual = $false
-                }
+            '2' {   startServices
+                    $servicesManual = $true }
+            '3' {   stopServices
+                    $servicesManual = $false }
             '4' { downloadUpdates $false }
             '5' { installUpdates $false }
             '6' { downloadUpdates $true }
-            '7' { stopServices
-                    if ($servicesManual -eq $false ) {
+            '7' {   if ($servicesManual -eq $false ) {
                         rebootServer
                     } else {
                         stopServices = $false
                         rebootServer
                     }
                 }
-            '8' { startServices
-                    wuauReport
+            '8' {   if ($servicesManual) {
+                        wuauReport
+                    } else {
+                        startServices
+                        wuauReport
+                    }
                     if (!($servicesManual)) {
                         stopServices
                     }
