@@ -605,6 +605,12 @@ function configureFirewall {
     }    
 }
 
+function rebootServer {
+    Write-Host "Sending reboot command" -ForegroundColor Yellow
+    shutdown.exe -r -t 01
+    exit 0    
+}
+
 function main {
     if (!(getWSUSURL)) {
         do {
@@ -624,23 +630,28 @@ function main {
         switch ($selection) {
             '1' { configureWSUS }
             '2' { startServices
-                    $servicesManual = $true }
+                    $servicesManual = $true
+                }
             '3' { stopServices
-                    $servicesManual = $false }
+                    $servicesManual = $false
+                }
             '4' { downloadUpdates $false }
             '5' { installUpdates $false }
             '6' { downloadUpdates $true }
             '7' { stopServices
-                    $servicesManual = $false
-                    Write-Host "Sending reboot command" -ForegroundColor Yellow
-                    shutdown.exe -r -t 01
-                    exit 0 }
+                    if ($servicesManual -eq $false ) {
+                        rebootServer
+                    } else {
+                        stopServices = $false
+                        rebootServer
+                    }
+                }
             '8' { startServices
                     wuauReport
                     if (!($servicesManual)) {
                         stopServices
                     }
-            }
+                }
         }
         ""
     } until ($selection.ToLower() -eq 'q')
@@ -656,8 +667,7 @@ if ($Silent -and !(getWSUSURL)) {
     exit 1
 } elseif ($Silent -and (getWSUSURL)) {
     downloadUpdates $true
-
-    exit 0
+    rebootServer
 } elseif (!$Silent) {
     main
 }
